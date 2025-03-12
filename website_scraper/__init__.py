@@ -3,6 +3,9 @@ from typing import List, Iterator
 from website_scraper.scrapers.duunitori_scraper import DuunitoriScraper
 from website_scraper.site_scraper import Listing, SiteScraper, Job
 
+import os
+from dotenv import load_dotenv
+
 scrapers = [
         DuunitoriScraper()
     ]
@@ -17,11 +20,14 @@ def extract_listings(date: str) -> List[Listing]:
 import time
 import sqlite3
 
+load_dotenv()
+DB_PATH = os.environ.get("DB_PATH")
+
 def listings_to_jobs_gen() -> (Iterator[Job], int):
     for scraper in scrapers:
         source = scraper.source
         try:
-            conn = sqlite3.connect("app.db")
+            conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
             cursor.execute("SELECT source, post_date, post_url FROM listings WHERE status = 'pending' AND source = ?", (source, ))

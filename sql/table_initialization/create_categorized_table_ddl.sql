@@ -1,6 +1,0 @@
-CREATE TABLE IF NOT EXISTS categories (
-    id INTEGER PRIMARY KEY,
-    category TEXT NOT NULL,
-    categorized_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(id) REFERENCES jobs(id)
-);

@@ -4,6 +4,8 @@ import os
 SQL_DIR = os.path.dirname(__file__)
 
 def initialize_tables(db_path: str) -> None:
+    print("Initializing tables...")
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 

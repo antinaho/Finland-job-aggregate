@@ -5,6 +5,12 @@ from website_scraper import extract_listings, listings_to_jobs_gen
 from datetime import datetime
 import sys
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+DB_PATH = os.environ.get("DB_PATH")
+
 def main() -> None:
     if len(sys.argv) > 1:
         date = sys.argv[1]
@@ -15,7 +21,8 @@ def main() -> None:
     else:
         date = datetime.strftime(datetime.now(), "%Y-%m-%d")
 
-    initialize_tables("app.db")
+
+    initialize_tables(DB_PATH)
 
     _listings_etl(date)
 
