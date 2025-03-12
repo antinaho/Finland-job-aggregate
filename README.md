@@ -10,8 +10,9 @@ This web scraper collects job postings from popular Finnish job sites and compil
    cd Finland-job-aggregate
    ```
 
-2. Run using Docker-compose, defaults to scraping the current day
+2. Build and run using Docker-compose, defaults to scraping the current day
     ```sh
+    docker-compose build
     docker-compose up
     ```
 
