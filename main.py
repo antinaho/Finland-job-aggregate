@@ -1,4 +1,4 @@
-from database.storage import listings_to_db, job_to_db
+from database.storage import listings_to_db, job_to_db, failed_job_extract
 from sql.table_initialization import initialize_tables
 from website_scraper import extract_listings, listings_to_jobs_gen
 
@@ -29,9 +29,11 @@ def _listings_etl(date):
 
 def _jobs_etl():
     print("Extraction and loading jobs from listings...")
-    for job in listings_to_jobs_gen():
-        if job is None: continue
-        job_to_db(job)
+    for job, listing in listings_to_jobs_gen():
+        if job is None:
+            failed_job_extract(listing[0], listing[1])
+        else:
+            job_to_db(job)
 
 if __name__ == "__main__":
     main()

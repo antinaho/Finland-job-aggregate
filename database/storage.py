@@ -49,6 +49,23 @@ def job_to_db(job: Job) -> None:
         if conn:
             conn.close()
 
+def failed_job_extract(source, url):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+                    UPDATE listings
+                    SET status = 'failed'
+                    WHERE source = ? AND post_url = ?
+                """, (source, url))
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"General error occurred: {e}")
+    finally:
+        if conn:
+            conn.close()
+
 
 def listings_to_db(listings: List[Listing]) -> None:
     try:

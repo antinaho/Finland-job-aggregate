@@ -17,7 +17,7 @@ def extract_listings(date: str) -> List[Listing]:
 import time
 import sqlite3
 
-def listings_to_jobs_gen() -> Iterator[Job]:
+def listings_to_jobs_gen() -> (Iterator[Job], int):
     for scraper in scrapers:
         source = scraper.source
         try:
@@ -29,7 +29,7 @@ def listings_to_jobs_gen() -> Iterator[Job]:
             for row in rows:
                 url = row[2]
                 time.sleep(2.4)
-                yield scraper.listing_url_to_job(url)
+                yield (scraper.listing_url_to_job(url), [source, url])
         except sqlite3.Error as e:
             print(f"Error occurred: {e}")
         finally:

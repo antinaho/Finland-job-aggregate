@@ -51,6 +51,10 @@ class DuunitoriScraper(SiteScraper):
 
         if not ok:
             return None
+        warning = soup.find("h2", class_="text--warning")
+        if warning:
+            return None
+
 
         title = soup.find("h1").get_text().strip()
 
