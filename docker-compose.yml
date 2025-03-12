@@ -1,0 +1,9 @@
+services:
+  job-aggregate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./database:/app/data
+    command: ["./start.sh"]
+    tty: true
