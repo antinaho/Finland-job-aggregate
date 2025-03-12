@@ -3,24 +3,14 @@ from sql.table_initialization import initialize_tables
 from website_scraper import extract_listings, listings_to_jobs_gen
 
 from datetime import datetime
-import sys
-
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-DB_PATH = os.environ.get("DB_PATH")
+DB_PATH = os.getenv("DB_PATH")
 
 def main() -> None:
-    if len(sys.argv) > 1:
-        date = sys.argv[1]
-        try:
-            datetime.strptime(date, "%Y-%m-%d")
-        except ValueError:
-            raise ValueError(f"Custom date must be in 'YYYY-MM-DD' format (e.g., {datetime.strftime(datetime.now(), "%Y-%m-%d")})")
-    else:
-        date = datetime.strftime(datetime.now(), "%Y-%m-%d")
-
+    date = os.getenv("DATE")
+    if not date:
+        date = datetime.today().strftime("%Y-%m-%d")
 
     initialize_tables(DB_PATH)
 

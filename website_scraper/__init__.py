@@ -4,7 +4,6 @@ from website_scraper.scrapers.duunitori_scraper import DuunitoriScraper
 from website_scraper.site_scraper import Listing, SiteScraper, Job
 
 import os
-from dotenv import load_dotenv
 
 scrapers = [
         DuunitoriScraper()
@@ -20,8 +19,7 @@ def extract_listings(date: str) -> List[Listing]:
 import time
 import sqlite3
 
-load_dotenv()
-DB_PATH = os.environ.get("DB_PATH")
+DB_PATH = os.getenv("DB_PATH")
 
 def listings_to_jobs_gen() -> (Iterator[Job], int):
     for scraper in scrapers:

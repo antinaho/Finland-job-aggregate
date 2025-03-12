@@ -5,5 +5,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./database:/app/data
+    environment:
+      - DB_PATH=/app/data/app.db
+      - DATE=${DATE:-}
     command: ["./start.sh"]
     tty: true

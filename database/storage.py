@@ -6,10 +6,8 @@ from website_scraper import Listing
 from website_scraper.site_scraper import Job
 
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-DB_PATH = os.environ.get("DB_PATH")
+DB_PATH = os.getenv("DB_PATH")
 
 def job_to_db(job: Job) -> None:
     try:
