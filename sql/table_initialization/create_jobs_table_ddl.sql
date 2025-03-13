@@ -1,9 +1,14 @@
 CREATE TABLE IF NOT EXISTS jobs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
+    indexed_on DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    source TEXT,
+    post_date DATETIME,
+
+    title TEXT,
     company TEXT,
     location TEXT,
-    description TEXT NOT NULL,
+    description TEXT,
     apply_url TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+
+    PRIMARY KEY(source, post_date, title, company, location)
 );

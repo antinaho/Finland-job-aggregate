@@ -1,36 +1,30 @@
-from database.storage import listings_to_db, job_to_db, failed_job_extract
+from database.storage import jobs_to_db
 from sql.table_initialization import initialize_tables
-from website_scraper import extract_listings, listings_to_jobs_gen
 
 from datetime import datetime
 import os
+
+from website_scraper.site_scraper import extract_jobs, listings_to_jobs_gen
 
 DB_PATH = os.getenv("DB_PATH")
 
 def main() -> None:
     date = os.getenv("DATE")
     if not date:
-        date = datetime.today().strftime("%Y-%m-%d")
+        date = datetime.today()
+    else:
+        date = datetime.strptime(os.getenv("DATE"), "%Y-%m-%d")
 
     initialize_tables(DB_PATH)
 
-    _listings_etl(date)
+    _jobs_etl(date)
 
-    _jobs_etl()
-
-def _listings_etl(date):
+def _jobs_etl(date: datetime) -> None:
     print(f"Extracting listings from date {date}")
-    listings = extract_listings(date)
-    print(f"Extracted {len(listings)} listings. Loading into database.")
-    listings_to_db(listings)
+    jobs = extract_jobs(date)
+    print(f"Extracted {len(jobs)} listings. Loading into database.")
+    jobs_to_db(jobs)
 
-def _jobs_etl():
-    print("Extraction and loading jobs from listings...")
-    for job, listing in listings_to_jobs_gen():
-        if job is None:
-            failed_job_extract(listing[0], listing[1])
-        else:
-            job_to_db(job)
 
 if __name__ == "__main__":
     main()

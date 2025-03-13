@@ -1,9 +1,40 @@
+from datetime import datetime
 from typing import List, Iterable
 
-from website_scraper.site_scraper import SiteScraper, Listing, Job
 from bs4 import BeautifulSoup
+import time
+
+from website_scraper.base_scraper import SiteScraper
+from website_scraper.models import Job
+
 
 class DuunitoriScraper(SiteScraper):
+    def _get_jobs_from_date(self, date: datetime) -> List[Listing]:
+        listings = []
+        continue_ = True
+        nav_page_urls = self._get_nav_page_urls()
+        for nav_url in nav_page_urls:
+            if not continue_: break
+
+            page, ok = self.extract_soup(nav_url)
+
+            if not ok: continue
+
+            for listing in self._extract_listings_from_nav_page(page):
+                listing_date = listing.date_datetime()
+                if listing_date == date.date():
+                    listings.append(listing)
+                elif listing_date > date.date():
+                    continue
+                else:
+                    continue_ = False
+                    break
+
+            time.sleep(2)
+
+        return listings
+
+
     nav_page_url_template = "https://duunitori.fi/tyopaikat?order_by=date_posted&sivu={0}"
     lookup_url = "https://duunitori.fi/tyopaikat"
     source = "Duunitori"
