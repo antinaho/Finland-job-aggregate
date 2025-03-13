@@ -7,9 +7,16 @@ import time
 from website_scraper.base_scraper import SiteScraper
 from website_scraper.models import Job
 
+from dataclasses import dataclass
+
+@dataclass
+class Listing:
+    source: str
+    date: datetime
+    url: str
 
 class DuunitoriScraper(SiteScraper):
-    def _get_jobs_from_date(self, date: datetime) -> List[Listing]:
+    def _get_jobs_from_date(self, date: datetime):
         listings = []
         continue_ = True
         nav_page_urls = self._get_nav_page_urls()
@@ -21,10 +28,10 @@ class DuunitoriScraper(SiteScraper):
             if not ok: continue
 
             for listing in self._extract_listings_from_nav_page(page):
-                listing_date = listing.date_datetime()
-                if listing_date == date.date():
+
+                if listing.date == date.date():
                     listings.append(listing)
-                elif listing_date > date.date():
+                elif listing.date > date.date():
                     continue
                 else:
                     continue_ = False
@@ -32,7 +39,13 @@ class DuunitoriScraper(SiteScraper):
 
             time.sleep(2)
 
-        return listings
+        jobs = []
+        for l in listings:
+            job = self.listing_url_to_job(l)
+            if job:
+                jobs.append(job)
+
+        return jobs
 
 
     nav_page_url_template = "https://duunitori.fi/tyopaikat?order_by=date_posted&sivu={0}"
@@ -75,9 +88,11 @@ class DuunitoriScraper(SiteScraper):
             year = "2025"
             formatted_date = f"{year}-{month}-{day}"
 
-            yield Listing(self.source, formatted_date, url_to_job_post)
+            yield Listing(self.source, datetime.strptime(formatted_date, "%Y-%m-%d"), url_to_job_post)
 
-    def listing_url_to_job(self, url) -> Job:
+    def listing_url_to_job(self, listing) -> Job:
+        url = listing.url
+
         soup, ok = SiteScraper.extract_soup(url)
 
         if not ok:
@@ -105,14 +120,14 @@ class DuunitoriScraper(SiteScraper):
             apply_url = url + "#uusitapa"
 
         description = soup.find("div", class_="description")
-        description_text = description.get_text(strip=True)
+        description = description.get_text(strip=True)
 
         return Job(
-            self.source,
-            url,
+            listing.source,
+            listing.date,
             title,
             company,
             location,
-            description_text,
+            description,
             apply_url
         )

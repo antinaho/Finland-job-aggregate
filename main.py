@@ -4,7 +4,7 @@ from sql.table_initialization import initialize_tables
 from datetime import datetime
 import os
 
-from website_scraper.site_scraper import extract_jobs, listings_to_jobs_gen
+from website_scraper.site_scraper import extract_jobs
 
 DB_PATH = os.getenv("DB_PATH")
 

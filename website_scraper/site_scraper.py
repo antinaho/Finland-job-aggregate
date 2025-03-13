@@ -6,10 +6,11 @@ import sqlite3
 import os
 
 from website_scraper.models import Job
+from website_scraper.scrapers.duunitori_scraper import DuunitoriScraper
 from website_scraper.scrapers.tyomarkkinatori_scraper import TyomarkkinatoriScraper
 
 scrapers = [
-        #DuunitoriScraper(),
+        DuunitoriScraper(),
         TyomarkkinatoriScraper()
     ]
 
