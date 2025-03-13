@@ -9,23 +9,6 @@ from website_scraper.models import Job
 
 DB_PATH = os.getenv("DB_PATH")
 
-def failed_job_extract(source, url):
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-
-        cursor.execute("""
-                    UPDATE listings
-                    SET status = 'failed'
-                    WHERE source = ? AND post_url = ?
-                """, (source, url))
-        conn.commit()
-    except sqlite3.Error as e:
-        print(f"General error occurred: {e}")
-    finally:
-        if conn:
-            conn.close()
-
 
 def jobs_to_db(jobs: List[Job]) -> None:
     try:
