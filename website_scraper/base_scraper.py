@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 from curl_cffi import requests
 from bs4 import BeautifulSoup
 from datetime import datetime

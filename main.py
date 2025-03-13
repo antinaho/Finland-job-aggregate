@@ -28,3 +28,4 @@ def _jobs_etl(date: datetime) -> None:
 
 if __name__ == "__main__":
     main()
+

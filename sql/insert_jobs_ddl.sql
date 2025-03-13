@@ -1,4 +1,4 @@
-INSERT INTO jobs (
+INSERT OR IGNORE INTO jobs (
     source,
     post_date,
     title,

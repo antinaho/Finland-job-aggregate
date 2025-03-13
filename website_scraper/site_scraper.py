@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Iterator
+from typing import Iterator
 
 import time
 import sqlite3
