@@ -39,3 +39,11 @@ sqlite3 database/app.db
 Progrem inserts the data into a table called **jobs**
 
 **jobs**: Stores the source of the job post and post date. Additionally stores title, company, location, apply link, etc.
+
+## Using scraped data
+
+You can find relevant jobs by querying important keywords from the database. For example you can find jobs where you would be using C++ by querying:
+
+```sh
+SELECT title, company, location, apply_url FROM jobs WHERE description LIKE '%C++%'
+```
