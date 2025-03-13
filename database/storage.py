@@ -32,7 +32,7 @@ def jobs_to_db(jobs: List[Job]) -> None:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        with open("./sql/insert_jobs.sql", "r") as sql_file:
+        with open("./sql/insert_jobs_ddl.sql", "r") as sql_file:
             insert_query = sql_file.read()
 
         job_data = [

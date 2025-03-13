@@ -17,6 +17,7 @@ scrapers = [
 def extract_jobs(date: datetime):
     jobs = []
     for scraper in scrapers:
+        print(f"Starting scrape for {scraper.source}")
         jobs.extend(scraper.extract_jobs_from_date(date))
 
     return jobs

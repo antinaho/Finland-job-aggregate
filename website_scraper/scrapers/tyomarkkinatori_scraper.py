@@ -75,13 +75,12 @@ class TyomarkkinatoriScraper(SiteScraper):
                 )
 
                 if r.status_code != 200:
-                    return []
+                    continue
 
                 data = r.json()
 
                 publish_date = data["publishDate"]
 
-                print(f"{date.date()} ::: {datetime.strptime(publish_date.split("T")[0], "%Y-%m-%d").date()}")
                 if datetime.strptime(publish_date.split("T")[0], "%Y-%m-%d").date() > date.date():
                     continue
                 elif datetime.strptime(publish_date.split("T")[0], "%Y-%m-%d").date() < date.date():
@@ -131,7 +130,7 @@ class TyomarkkinatoriScraper(SiteScraper):
 
                 jobs.append(job)
 
-                time.sleep(random.random() * 1.2 + 0.3)
+                time.sleep(random.random() * 1.5)
 
         return jobs
 
@@ -146,27 +145,6 @@ class TyomarkkinatoriScraper(SiteScraper):
     def test(self, date: datetime):
         listings = self._get_jobs_from_date(date)
         print(len(listings))
-
-
-cookies = {
-    'CookieConsent': '{stamp:%27Xy8Pd5FLJ2jRlBdMUBFYhcPHVhIYeNUekCpOYsbEm/LQhCBOlK4gPw==%27%2Cnecessary:true%2Cpreferences:true%2Cstatistics:true%2Cmarketing:true%2Cmethod:%27explicit%27%2Cver:1%2Cutc:1724572734317%2Cregion:%27fi%27}',
-    'csrf': 'QMlciFpKeVogXmQ2hvojdUe4o03OUNSCQKEiJeHZL6yYg83Bo8JNaVexQ1bqA3aCmU_Sdb7O2Jyhtot16JkKQQ:AAABlY5HZ14:rzc2WHjDdu2lMzAVu6qm_A',
-}
-
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:136.0) Gecko/20100101 Firefox/136.0',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'fi-FI,fi;q=0.8,en-US;q=0.5,en;q=0.3',
-    # 'Accept-Encoding': 'gzip, deflate, br, zstd',
-    'Referer': 'https://tyomarkkinatori.fi/',
-    'Content-Type': 'application/json',
-    'Origin': 'https://tyomarkkinatori.fi',
-    'Connection': 'keep-alive',
-    # 'Cookie': 'CookieConsent={stamp:%27Xy8Pd5FLJ2jRlBdMUBFYhcPHVhIYeNUekCpOYsbEm/LQhCBOlK4gPw==%27%2Cnecessary:true%2Cpreferences:true%2Cstatistics:true%2Cmarketing:true%2Cmethod:%27explicit%27%2Cver:1%2Cutc:1724572734317%2Cregion:%27fi%27}; csrf=QMlciFpKeVogXmQ2hvojdUe4o03OUNSCQKEiJeHZL6yYg83Bo8JNaVexQ1bqA3aCmU_Sdb7O2Jyhtot16JkKQQ:AAABlY5HZ14:rzc2WHjDdu2lMzAVu6qm_A',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-origin',
-}
 
 json_data = {
     'query': '',

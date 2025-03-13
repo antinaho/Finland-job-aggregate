@@ -7,5 +7,5 @@ INSERT INTO jobs (
     description,
     apply_url
 ) VALUES (
-    ?, ?, ?, ?, ?
+    ?, ?, ?, ?, ?, ?, ?
 );

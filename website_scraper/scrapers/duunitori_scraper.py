@@ -29,9 +29,9 @@ class DuunitoriScraper(SiteScraper):
 
             for listing in self._extract_listings_from_nav_page(page):
 
-                if listing.date == date.date():
+                if listing.date.date() == date.date():
                     listings.append(listing)
-                elif listing.date > date.date():
+                elif listing.date.date() > date.date():
                     continue
                 else:
                     continue_ = False
