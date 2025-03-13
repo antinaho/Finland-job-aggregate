@@ -36,8 +36,6 @@ You can access the database from the terminal by using:
 sqlite3 database/app.db
 ```
 
-Database contains 2 tables **listings** and **jobs**
+Progrem inserts the data into a table called **jobs**
 
-**listings**: tracks individual job posts and their creation dates from different sources
-
-**jobs**: stores detailed information about the job. Title, company, location, apply link, etc.
+**jobs**: Stores the source of the job post and post date. Additionally stores title, company, location, apply link, etc.
