@@ -10,8 +10,8 @@ from website_scraper.scrapers.duunitori_scraper import DuunitoriScraper
 from website_scraper.scrapers.tyomarkkinatori_scraper import TyomarkkinatoriScraper
 
 scrapers = [
-        DuunitoriScraper(),
-        TyomarkkinatoriScraper()
+        TyomarkkinatoriScraper(),
+        DuunitoriScraper()
     ]
 
 def extract_jobs(date: datetime):

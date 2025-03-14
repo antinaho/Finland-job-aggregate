@@ -3,13 +3,7 @@ from curl_cffi import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-from website_scraper.models import Job
-
 class SiteScraper(ABC):
-
-    @abstractmethod
-    def listing_url_to_job(self, url) -> Job:
-        pass
 
     @abstractmethod
     def _get_jobs_from_date(self, date: datetime):
