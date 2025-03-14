@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import datetime
 
 @dataclass
 class Job:
     source: str
-    post_date: date
+    post_date: datetime.date
 
     title: str
     company: str

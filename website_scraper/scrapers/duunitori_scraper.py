@@ -9,6 +9,18 @@ from website_scraper.models import Job
 
 from dataclasses import dataclass
 
+import logging
+from rich import print
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 @dataclass
 class Listing:
     source: str
@@ -20,7 +32,9 @@ class DuunitoriScraper(SiteScraper):
         listings = []
         continue_ = True
         nav_page_urls = self._get_nav_page_urls()
-        for nav_url in nav_page_urls:
+        for i, nav_url in nav_page_urls:
+            logger.info(f"Finding jobs from page {i+1}")
+
             if not continue_: break
 
             page, ok = self.extract_soup(nav_url)

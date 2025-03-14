@@ -16,10 +16,10 @@ class SiteScraper(ABC):
             soup = BeautifulSoup(r.text, "html.parser")
             return soup, r.ok
         except Exception as e:
-            print(f"Request error: {e}")
+            print(f"Request error on {page_url}, skipping")
             return None, False
 
 
     def extract_jobs_from_date(self, date: datetime):
-        listings = self._get_jobs_from_date(date)
-        return listings
+        jobs = self._get_jobs_from_date(date)
+        return jobs

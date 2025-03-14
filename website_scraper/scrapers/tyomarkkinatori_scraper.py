@@ -9,7 +9,17 @@ from website_scraper.models import Job
 import time
 import random
 
+import logging
 from rich import print
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 class TyomarkkinatoriScraper(SiteScraper):
 
@@ -30,6 +40,7 @@ class TyomarkkinatoriScraper(SiteScraper):
         continue_ = True
 
         for i in range(0, max_page):
+            logger.info(f"Finding jobs from page {i+1}")
             if not continue_: break
 
             json_data['paging']['pageNumber'] = i
@@ -95,7 +106,7 @@ class TyomarkkinatoriScraper(SiteScraper):
 
                 jobs.append(job)
 
-                time.sleep(random.random() * 1.5)
+            time.sleep(random.random() * 1.5)
         return jobs
 
 def _get_max_page(formatted_datetime) -> int:
@@ -129,7 +140,7 @@ def _get_location_codes() -> (str, bool):
     return location_codes.json(), True
 
 def _raw_to_job_date(raw_date) -> datetime.date:
-    return datetime.strptime(raw_date.split("T")[0], "%Y-%m-%d").date(),
+    return datetime.strptime(raw_date.split("T")[0], "%Y-%m-%d").date()
 
 def _publish_date(json) -> str:
     return json["publishDate"]

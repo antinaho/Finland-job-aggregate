@@ -19,10 +19,11 @@ def main() -> None:
 
     _jobs_etl(date)
 
+from rich import print
+
 def _jobs_etl(date: datetime) -> None:
     print(f"Extracting listings from date {date.date()}")
     jobs = extract_jobs(date)
-    print(f"Extracted {len(jobs)} listings. Loading into database.")
     jobs_to_db(jobs)
 
 
