@@ -32,7 +32,7 @@ class DuunitoriScraper(SiteScraper):
         listings = []
         continue_ = True
         nav_page_urls = self._get_nav_page_urls()
-        for i, nav_url in nav_page_urls:
+        for i, nav_url in enumerate(nav_page_urls):
             logger.info(f"Finding jobs from page {i+1}")
 
             if not continue_: break
@@ -43,9 +43,9 @@ class DuunitoriScraper(SiteScraper):
 
             for listing in self._extract_listings_from_nav_page(page):
 
-                if listing.date.date() == date.date():
+                if listing.date == date.date():
                     listings.append(listing)
-                elif listing.date.date() > date.date():
+                elif listing.date > date.date():
                     continue
                 else:
                     continue_ = False
