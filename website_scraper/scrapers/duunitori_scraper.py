@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Listing:
     source: str
-    date: datetime
+    date: datetime.date
     url: str
 
 class DuunitoriScraper(SiteScraper):
@@ -102,7 +102,7 @@ class DuunitoriScraper(SiteScraper):
             year = "2025"
             formatted_date = f"{year}-{month}-{day}"
 
-            yield Listing(self.source, datetime.strptime(formatted_date, "%Y-%m-%d"), url_to_job_post)
+            yield Listing(self.source, datetime.strptime(formatted_date, "%Y-%m-%d").date(), url_to_job_post)
 
     def listing_url_to_job(self, listing) -> Job:
         url = listing.url
