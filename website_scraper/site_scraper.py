@@ -36,7 +36,7 @@ def listings_to_jobs_gen() -> (Iterator[Job], int):
             for row in rows:
                 url = row[2]
                 time.sleep(2.4)
-                yield (scraper.listing_url_to_job(url), [source, url])
+                yield (scraper._listing_url_to_job(url), [source, url])
         except sqlite3.Error as e:
             print(f"Error occurred: {e}")
         finally:

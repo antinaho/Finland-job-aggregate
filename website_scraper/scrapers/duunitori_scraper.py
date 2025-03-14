@@ -27,15 +27,39 @@ class Listing:
     date: datetime.date
     url: str
 
+def _title(soup) -> str:
+    return soup.select_one("h1").get_text(strip=True)
+
+def _company(soup) -> str:
+    company_tag = soup.select_one("p.header__info > a > span")
+    if not company_tag:
+        company_tag = soup.select_one("p.header__info > span > span")
+    return company_tag.get_text(strip=True)
+
+def _location(soup) -> str:
+    location_a_tag = soup.select("a", href=lambda href: href and "/alue/" in href)
+    return location_a_tag.select_one("span").get_text(strip=True)
+
+def _apply_url(soup, baseurl) -> str:
+    apply_btn = soup.select_one("a.apply--button")
+    apply_url = apply_btn["href"]
+    if apply_url[0:1] == "/":
+        apply_url = f"https://duunitori.fi{apply_url}"
+    elif apply_url == "#uusitapa":
+        apply_url = baseurl + "#uusitapa"
+    return apply_url
+
+def _description(soup) -> str:
+    return soup.select_one("div.description").get_text(strip=True)
+
 class DuunitoriScraper(SiteScraper):
     def _get_jobs_from_date(self, date: datetime):
         listings = []
         continue_ = True
         nav_page_urls = self._get_nav_page_urls()
         for i, nav_url in enumerate(nav_page_urls):
-            logger.info(f"Finding jobs from page {i+1}")
-
             if not continue_: break
+            logger.info(f"Finding jobs from page {i+1}")
 
             page, ok = self.extract_soup(nav_url)
 
@@ -55,7 +79,7 @@ class DuunitoriScraper(SiteScraper):
 
         jobs = []
         for l in listings:
-            job = self.listing_url_to_job(l)
+            job = self._listing_url_to_job(l)
             if job:
                 jobs.append(job)
 
@@ -73,27 +97,18 @@ class DuunitoriScraper(SiteScraper):
             print(f"Couldn't get nav page urls from {self.lookup_url}")
             return []
 
-        max_page = 0
-        page_nav = soup.find_all("a", class_="pagination__pagenum")
-        for page in page_nav:
-            if int(page.get_text().strip()) > max_page:
-                max_page = int(page.get_text())
+        max_page = soup.select("a.pagination__pagenum")[-1].get_text(strip=True)
 
-        urls = []
-        for i in range(max_page):
-            if i == 1:
-                continue
-            formatted_url = self.nav_page_url_template.format(i)
-            urls.append(formatted_url)
+        urls = [self.nav_page_url_template.format(i) for i in range(int(max_page)) if i != 1]
 
         return urls
 
     def _extract_listings_from_nav_page(self, nav_page: BeautifulSoup) -> Iterable[Listing]:
         divs = nav_page.select("div.grid-sandbox--tight-bottom div.grid.grid--middle.job-box.job-box--lg")
         for item in divs:
-            href = item.find("a")["href"]
+            href = item.select_one("a")["href"]
             url_to_job_post = f"https://duunitori.fi{href}"
-            posted_date = item.find("span", class_="job-box__job-posted")
+            posted_date = item.select_one("span.job-box__job-posted")
 
             date_text_split = posted_date.text.split(" ")
             date_split = date_text_split[1].split(".")
@@ -104,37 +119,22 @@ class DuunitoriScraper(SiteScraper):
 
             yield Listing(self.source, datetime.strptime(formatted_date, "%Y-%m-%d").date(), url_to_job_post)
 
-    def listing_url_to_job(self, listing) -> Job:
+    def _listing_url_to_job(self, listing) -> Job:
         url = listing.url
 
         soup, ok = SiteScraper.extract_soup(url)
 
         if not ok:
             return None
-        warning = soup.find("h2", class_="text--warning")
+        warning = soup.select_one("h2.text--warning")
         if warning:
             return None
 
-
-        title = soup.find("h1").get_text().strip()
-
-        company_tag = soup.select_one("p.header__info > a > span")
-        if not company_tag:
-            company_tag = soup.select_one("p.header__info > span > span")
-        company = company_tag.get_text(strip=True)
-
-        location_a_tag = soup.find("a", href=lambda href: href and "/alue/" in href)
-        location = location_a_tag.find("span").get_text(strip=True)
-
-        apply_btn = soup.find("a", class_="apply--button")
-        apply_url = apply_btn["href"]
-        if apply_url[0:1] == "/":
-            apply_url = f"https://duunitori.fi{apply_url}"
-        elif apply_url == "#uusitapa":
-            apply_url = url + "#uusitapa"
-
-        description = soup.find("div", class_="description")
-        description = description.get_text(strip=True)
+        title = _title(soup)
+        company = _company(soup)
+        location = _location(soup)
+        apply_url = _apply_url(soup, url)
+        description = _description(soup)
 
         return Job(
             listing.source,
