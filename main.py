@@ -29,7 +29,4 @@ def _jobs_etl(date: datetime) -> None:
 
 
 if __name__ == "__main__":
-    #main()
-    jobly = JoblyScraper()
-    jobs = jobly._get_jobs_from_date(datetime.strptime("2025-03-14", "%Y-%m-%d"))
-    jobs_to_db(jobs)
+    main()

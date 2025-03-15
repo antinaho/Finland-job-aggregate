@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS jobs (
 
     source TEXT,
     post_date DATETIME,
+    post_url TEXT,
 
     title TEXT,
     company TEXT,
@@ -10,5 +11,5 @@ CREATE TABLE IF NOT EXISTS jobs (
     description TEXT,
     apply_url TEXT,
 
-    PRIMARY KEY(source, post_date, title, company, location)
+    PRIMARY KEY(source, post_date, post_url)
 );

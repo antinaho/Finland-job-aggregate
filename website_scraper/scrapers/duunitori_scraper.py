@@ -62,10 +62,9 @@ class DuunitoriScraper(SiteScraper):
         nav_page_urls = self._get_nav_page_urls()
         for i, nav_url in enumerate(nav_page_urls):
             if not continue_: break
-            logger.info(f"Finding jobs from page {i+1}")
+            logger.info(f"Finding listings from page {i+1}")
 
             page, ok = self.extract_soup(nav_url)
-            print(ok)
             if not ok: continue
 
             for listing in self._extract_listings_from_nav_page(page):
@@ -81,7 +80,9 @@ class DuunitoriScraper(SiteScraper):
             time.sleep(2)
 
         jobs = []
-        for l in listings:
+        listing_len = len(listings)
+        for i, l in enumerate(listings):
+            logger.info(f"Extracting job from listings: {i+1} / {listing_len}")
             job = self._listing_url_to_job(l)
             if job:
                 jobs.append(job)
@@ -142,6 +143,7 @@ class DuunitoriScraper(SiteScraper):
         return Job(
             listing.source,
             listing.date,
+            url,
             title,
             company,
             location,

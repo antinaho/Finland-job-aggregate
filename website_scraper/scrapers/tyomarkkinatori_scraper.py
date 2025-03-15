@@ -97,6 +97,7 @@ class TyomarkkinatoriScraper(SiteScraper):
                 job = Job(
                     self.source,
                     _raw_to_job_date(publish_date),
+                    _post_url(item["id"], main_language),
                     title,
                     company,
                     location,

@@ -5,6 +5,7 @@ from datetime import datetime
 class Job:
     source: str
     post_date: datetime.date
+    post_url: str
 
     title: str
     company: str

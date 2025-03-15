@@ -86,9 +86,14 @@ class JoblyScraper(SiteScraper):
         post_urls = []
         continue_ = True
         url_generator = _next_nav_url_gen(soup)
+        i = 1
         while continue_:
             try:
                 soup = next(url_generator)
+
+                logger.info(f"Finding listings from page: {i}")
+                i += 1
+
                 posts = soup.select("div.views-row")
 
                 for post in posts:
@@ -113,9 +118,11 @@ class JoblyScraper(SiteScraper):
             except StopIteration:
                 break
 
-        for date, url in post_urls:
-            print(url)
-            soup, ok = SiteScraper.extract_soup(url)
+        len_urls = len(post_urls)
+        for i, listing in enumerate(post_urls):
+            logger.info(f"Extracting job from listings: {i+1} / {len_urls}")
+
+            soup, ok = SiteScraper.extract_soup(listing[1])
 
             if not ok:
                 continue
@@ -127,11 +134,12 @@ class JoblyScraper(SiteScraper):
             description = _description(soup)
 
             if apply_url == "":
-                apply_url = url
+                apply_url = listing[1]
 
             job = Job(
                 self.source,
-                date,
+                listing[0],
+                listing[1],
                 title,
                 company,
                 location,
