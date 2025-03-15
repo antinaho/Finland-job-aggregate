@@ -1,13 +1,25 @@
 from datetime import datetime
 
 from bs4 import BeautifulSoup
+from curl_cffi import requests
 from rich import print
 
 from website_scraper.base_scraper import SiteScraper
+from website_scraper.models import Job
 from website_scraper.scrapers.duunitori_scraper import Listing
+import logging
+import time
 
 from typing import Iterator
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 def _next_nav_url_gen(soup) -> Iterator[BeautifulSoup]:
     base_url = "https://www.jobly.fi/"
@@ -18,10 +30,46 @@ def _next_nav_url_gen(soup) -> Iterator[BeautifulSoup]:
             break
         next_url = base_url + link["href"]
         soup, ok = SiteScraper.extract_soup(next_url)
-        print(next_url)
         if not ok:
             break
         yield soup
+
+
+def _title(soup) -> str:
+    title = soup.select_one("h1")
+    if title:
+        return title.get_text(strip=True)
+    return ""
+
+def _company(soup) -> str:
+    comp = soup.select_one("div.pane-node-recruiter-company-profile-job-organization > a")
+    if comp:
+        return comp.get_text(strip=True)
+    return ""
+
+def _location(soup) -> str:
+    loc = soup.select_one("div.pane-entity-field pane-node-field-job-region")
+    if loc:
+        return loc.get_text(strip=True)
+    return ""
+
+def _apply_url(soup) -> str:
+    tail = soup.select_one("li.recruiter_job_application > a")["href"]
+    external_url = "https://www.jobly.fi"
+    url = external_url + tail
+
+    try:
+        r = requests.get(url, allow_redirects=True)
+        return r.redirect_url
+    except Exception as e:
+        return ""
+
+
+def _description(soup) -> str:
+    description = soup.select_one("div.node-job")
+    if description:
+        return description.get_text(strip=True)
+    return ""
 
 class JoblyScraper(SiteScraper):
     source = "Jobly"
@@ -35,7 +83,7 @@ class JoblyScraper(SiteScraper):
         if not ok:
             return jobs
 
-        listings = []
+        post_urls = []
         continue_ = True
         url_generator = _next_nav_url_gen(soup)
         while continue_:
@@ -55,18 +103,43 @@ class JoblyScraper(SiteScraper):
 
                     post_url = post.select_one("a.recruiter-job-link")["href"]
 
-                    listing = Listing(self.source, post_date, post_url)
-
                     if post_date == date.date():
-                        listings.append(listing)
+                        post_urls.append((post_date, post_url))
                     elif post_date > date.date():
                         continue
                     else:
                         continue_ = False
                         break
-
-
             except StopIteration:
                 break
 
-        print(len(listings))
+        for date, url in post_urls:
+            print(url)
+            soup, ok = SiteScraper.extract_soup(url)
+
+            if not ok:
+                continue
+
+            title = _title(soup)
+            company = _company(soup)
+            location = _location(soup)
+            apply_url = _apply_url(soup)
+            description = _description(soup)
+
+            if apply_url == "":
+                apply_url = url
+
+            job = Job(
+                self.source,
+                date,
+                title,
+                company,
+                location,
+                description,
+                apply_url,
+            )
+
+            jobs.append(job)
+            time.sleep(1.111)
+
+        return jobs
