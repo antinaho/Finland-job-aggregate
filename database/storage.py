@@ -22,6 +22,7 @@ def jobs_to_db(jobs: List[Job]) -> None:
             (
                 job.source,
                 job.post_date,
+                job.post_url,
                 job.title,
                 job.company,
                 job.location,
