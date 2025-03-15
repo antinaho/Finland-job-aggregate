@@ -37,11 +37,14 @@ def _company(soup) -> str:
     return company_tag.get_text(strip=True)
 
 def _location(soup) -> str:
-    location_a_tag = soup.select("a", href=lambda href: href and "/alue/" in href)
+    location_a_tag = soup.find("a", href=lambda href: href and "/alue/" in href)
     return location_a_tag.select_one("span").get_text(strip=True)
 
 def _apply_url(soup, baseurl) -> str:
     apply_btn = soup.select_one("a.apply--button")
+    if not apply_btn:
+        return ""
+
     apply_url = apply_btn["href"]
     if apply_url[0:1] == "/":
         apply_url = f"https://duunitori.fi{apply_url}"
@@ -62,7 +65,7 @@ class DuunitoriScraper(SiteScraper):
             logger.info(f"Finding jobs from page {i+1}")
 
             page, ok = self.extract_soup(nav_url)
-
+            print(ok)
             if not ok: continue
 
             for listing in self._extract_listings_from_nav_page(page):

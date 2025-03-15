@@ -146,13 +146,14 @@ def _publish_date(json) -> str:
     return json["publishDate"]
 
 def _title( json, language) -> str:
-    return json["title"]["values"][language]
+    return json["title"]["values"].get(language, "")
 
 def _company(json, language) -> str:
-    return json["businessName"]["values"][language]
+    #print(json)
+    return json["businessName"]["values"].get(language, "")
 
 def _description(json, language) -> str:
-    return json["jobDescription"]["values"][language]
+    return json["jobDescription"]["values"].get(language, "")
 
 def _location(json, location_json) -> str:
 
