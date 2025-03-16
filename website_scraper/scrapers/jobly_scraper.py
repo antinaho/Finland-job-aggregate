@@ -105,7 +105,7 @@ class JoblyScraper(SiteScraper):
                     post_date = datetime.strptime(f"{year}-{month}-{day}", "%Y-%m-%d").date()
 
                     post_url = post.select_one("a.recruiter-job-link")["href"]
-                    print(post_url)
+
                     if post_date == date.date():
                         post_urls.append((post_date, post_url))
                     elif post_date > date.date():
