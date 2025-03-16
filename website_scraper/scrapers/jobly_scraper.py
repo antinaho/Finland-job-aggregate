@@ -59,7 +59,7 @@ def _apply_url(soup) -> str:
 
     try:
         r = requests.get(url, allow_redirects=True)
-        return r.redirect_url
+        return r.url
     except Exception as e:
         return ""
 
@@ -88,7 +88,6 @@ class JoblyScraper(SiteScraper):
         i = 1
         while continue_:
             try:
-
                 logger.info(f"Finding listings from page: {i}")
                 i += 1
 
