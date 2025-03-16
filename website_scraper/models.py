@@ -12,3 +12,9 @@ class Job:
     location: str
     description: str
     apply_url: str
+
+@dataclass
+class Listing:
+    source: str
+    date: datetime.date
+    url: str

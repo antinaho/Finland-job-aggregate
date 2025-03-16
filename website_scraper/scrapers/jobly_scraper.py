@@ -6,7 +6,6 @@ from rich import print
 
 from website_scraper.base_scraper import SiteScraper
 from website_scraper.models import Job
-from website_scraper.scrapers.duunitori_scraper import Listing
 import logging
 import time
 

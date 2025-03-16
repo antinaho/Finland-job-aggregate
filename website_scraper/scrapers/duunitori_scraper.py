@@ -5,9 +5,7 @@ from bs4 import BeautifulSoup
 import time
 
 from website_scraper.base_scraper import SiteScraper
-from website_scraper.models import Job
-
-from dataclasses import dataclass
+from website_scraper.models import Job, Listing
 
 import logging
 from rich import print
@@ -21,12 +19,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-@dataclass
-class Listing:
-    source: str
-    date: datetime.date
-    url: str
-
 def _title(soup) -> str:
     return soup.select_one("h1").get_text(strip=True)
 
@@ -37,8 +29,24 @@ def _company(soup) -> str:
     return company_tag.get_text(strip=True)
 
 def _location(soup) -> str:
-    location_a_tag = soup.find("a", href=lambda href: href and "/alue/" in href)
-    return location_a_tag.select_one("span").get_text(strip=True)
+    loc_tag = soup.select_one("p.header__info")
+    location = ""
+
+    primary_location = loc_tag.select_one("a > span").get_text(strip=True)
+    location += primary_location
+
+    secondary_locations = loc_tag.select("span", recursive=False)
+    for secondary in secondary_locations:
+        if secondary.get_text()[0] == " ":
+            continue
+        location += ", "
+        if secondary["title"]:
+            location_name = secondary["title"]
+        else:
+            location_name = secondary.get_text(strip=True, recursive=False)
+        location += location_name
+
+    return location
 
 def _apply_url(soup, baseurl) -> str:
     apply_btn = soup.select_one("a.apply--button")
@@ -143,7 +151,7 @@ class DuunitoriScraper(SiteScraper):
         return Job(
             listing.source,
             listing.date,
-            url,
+            listing.url,
             title,
             company,
             location,
