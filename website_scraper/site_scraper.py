@@ -13,7 +13,7 @@ from website_scraper.scrapers.tyomarkkinatori_scraper import TyomarkkinatoriScra
 scrapers = [
         TyomarkkinatoriScraper(),
         DuunitoriScraper(),
-        JoblyScraper()
+        JoblyScraper(),
     ]
 
 def extract_jobs(date: datetime):

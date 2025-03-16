@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Iterable
+from typing import List, Iterable, Iterator
 
 from bs4 import BeautifulSoup
 import time
@@ -40,10 +40,10 @@ def _location(soup) -> str:
         if secondary.get_text()[0] == " ":
             continue
         location += ", "
-        if secondary["title"]:
+        if secondary.has_attr("title"):
             location_name = secondary["title"]
         else:
-            location_name = secondary.get_text(strip=True, recursive=False)
+            location_name = secondary.get_text(strip=True)
         location += location_name
 
     return location
@@ -63,29 +63,47 @@ def _apply_url(soup, baseurl) -> str:
 def _description(soup) -> str:
     return soup.select_one("div.description").get_text(strip=True)
 
+def _next_nav_url_gen(soup) -> Iterator[BeautifulSoup]:
+    while True:
+        link = soup.select("a.pagination__page-round")[-1]
+        if not link:
+            break
+
+        next_url = link["href"]
+        print(next_url)
+        soup, ok = SiteScraper.extract_soup(next_url)
+        if not ok:
+            break
+        yield soup
+
 class DuunitoriScraper(SiteScraper):
     def _get_jobs_from_date(self, date: datetime):
+
+        init_page = "https://duunitori.fi/tyopaikat?order_by=date_posted&sivu=0"
+        soup, ok = SiteScraper.extract_soup(init_page)
+        jobs = []
+
+        if not ok:
+            return jobs
+
         listings = []
         continue_ = True
-        nav_page_urls = self._get_nav_page_urls()
-        for i, nav_url in enumerate(nav_page_urls):
-            if not continue_: break
-            logger.info(f"Finding listings from page {i+1}")
-
-            page, ok = self.extract_soup(nav_url)
-            if not ok: continue
-
-            for listing in self._extract_listings_from_nav_page(page):
-
-                if listing.date == date.date():
-                    listings.append(listing)
-                elif listing.date > date.date():
-                    continue
-                else:
-                    continue_ = False
-                    break
-
-            time.sleep(2)
+        url_generator = _next_nav_url_gen(soup)
+        i = 1
+        while continue_:
+            try:
+                logger.info(f"Finding listings from page {i}")
+                for listing in self._extract_listings_from_nav_page(soup):
+                    if listing.date == date.date():
+                        listings.append(listing)
+                    elif listing.date > date.date():
+                        continue
+                    else:
+                        continue_ = False
+                        break
+                soup = next(url_generator)
+            except StopIteration:
+                break
 
         jobs = []
         listing_len = len(listings)
@@ -99,21 +117,7 @@ class DuunitoriScraper(SiteScraper):
 
 
     nav_page_url_template = "https://duunitori.fi/tyopaikat?order_by=date_posted&sivu={0}"
-    lookup_url = "https://duunitori.fi/tyopaikat"
     source = "Duunitori"
-
-    def _get_nav_page_urls(self) -> List[str]:
-        soup, ok = SiteScraper.extract_soup(self.lookup_url)
-
-        if not ok:
-            print(f"Couldn't get nav page urls from {self.lookup_url}")
-            return []
-
-        max_page = soup.select("a.pagination__pagenum")[-1].get_text(strip=True)
-
-        urls = [self.nav_page_url_template.format(i) for i in range(int(max_page)) if i != 1]
-
-        return urls
 
     def _extract_listings_from_nav_page(self, nav_page: BeautifulSoup) -> Iterable[Listing]:
         divs = nav_page.select("div.grid-sandbox--tight-bottom div.grid.grid--middle.job-box.job-box--lg")
