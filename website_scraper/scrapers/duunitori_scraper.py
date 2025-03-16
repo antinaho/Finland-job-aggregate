@@ -77,7 +77,7 @@ def _next_nav_url_gen(soup) -> Iterator[BeautifulSoup]:
         yield soup
 
 class DuunitoriScraper(SiteScraper):
-    def _get_jobs_from_date(self, date: datetime):
+    def _get_jobs_from_date(self, date: datetime) -> List[Job]:
 
         init_page = "https://duunitori.fi/tyopaikat?order_by=date_posted&sivu=0"
         soup, ok = SiteScraper.extract_soup(init_page)
