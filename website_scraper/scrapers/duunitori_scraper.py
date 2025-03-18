@@ -70,7 +70,6 @@ def _next_nav_url_gen(soup) -> Iterator[BeautifulSoup]:
             break
 
         next_url = link["href"]
-        print(next_url)
         soup, ok = SiteScraper.extract_soup(next_url)
         if not ok:
             break
@@ -93,6 +92,7 @@ class DuunitoriScraper(SiteScraper):
         while continue_:
             try:
                 logger.info(f"Finding listings from page {i}")
+                i += 1
                 for listing in self._extract_listings_from_nav_page(soup):
                     if listing.date == date.date():
                         listings.append(listing)
