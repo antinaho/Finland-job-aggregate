@@ -52,16 +52,19 @@ def _location(soup) -> str:
         return loc.get_text(strip=True)
     return ""
 
-def _apply_url(soup) -> str:
-    tail = soup.select_one("li.recruiter_job_application > a")["href"]
-    external_url = "https://www.jobly.fi"
-    url = external_url + tail
-
+def _apply_url(soup, source_url) -> str:
     try:
-        r = requests.get(url, allow_redirects=True)
-        return r.url
+        tail = soup.select_one("li.recruiter_job_application > a")["href"]
+        external_url = "https://www.jobly.fi"
+        url = external_url + tail
+
+        try:
+            r = requests.get(url, allow_redirects=True)
+            return r.url
+        except Exception as e:
+            return ""
     except Exception as e:
-        return ""
+        print(f"Apply url Jobly, {source_url}")
 
 
 def _description(soup) -> str:
@@ -120,7 +123,10 @@ class JoblyScraper(SiteScraper):
         for i, listing in enumerate(post_urls):
             logger.info(f"Extracting job from listings: {i+1} / {len_urls}")
 
-            soup, ok = SiteScraper.extract_soup(listing[1])
+            date = listing[0]
+            url = listing[1]
+
+            soup, ok = SiteScraper.extract_soup(url)
 
             if not ok:
                 continue
@@ -128,7 +134,7 @@ class JoblyScraper(SiteScraper):
             title = _title(soup)
             company = _company(soup)
             location = _location(soup)
-            apply_url = _apply_url(soup)
+            apply_url = _apply_url(soup, url)
             description = _description(soup)
 
             if apply_url == "":
@@ -136,8 +142,8 @@ class JoblyScraper(SiteScraper):
 
             job = Job(
                 self.source,
-                listing[0],
-                listing[1],
+                date,
+                url,
                 title,
                 company,
                 location,

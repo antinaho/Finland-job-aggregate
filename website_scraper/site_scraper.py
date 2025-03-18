@@ -1,46 +1,21 @@
 from datetime import datetime
-from typing import Iterator
+from typing import Iterator, Protocol
 
 import time
 import sqlite3
 import os
 
-from website_scraper.models import Job
-from website_scraper.scrapers.duunitori_scraper import DuunitoriScraper
-from website_scraper.scrapers.jobly_scraper import JoblyScraper
-from website_scraper.scrapers.tyomarkkinatori_scraper import TyomarkkinatoriScraper
+from bs4 import BeautifulSoup
+from curl_cffi import requests
 
-scrapers = [
-        TyomarkkinatoriScraper(),
-        DuunitoriScraper(),
-        JoblyScraper(),
-    ]
 
-def extract_jobs(date: datetime):
-    jobs = []
-    for scraper in scrapers:
-        print(f"Starting scrape for {scraper.source}")
-        jobs.extend(scraper.extract_jobs_from_date(date))
-
-    return jobs
+def get_soup(page_url) -> (BeautifulSoup, bool):
+    try:
+        r = requests.get(page_url, impersonate="chrome")
+        soup = BeautifulSoup(r.text, "html.parser")
+        return soup, r.ok
+    except Exception as e:
+        print(f"Request error on {page_url}, skipping")
+        return None, False
 
 DB_PATH = os.getenv("DB_PATH")
-
-def listings_to_jobs_gen() -> (Iterator[Job], int):
-    for scraper in scrapers:
-        source = scraper.source
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-
-            cursor.execute("SELECT source, post_date, post_url FROM listings WHERE status = 'pending' AND source = ?", (source, ))
-            rows = cursor.fetchall()
-            for row in rows:
-                url = row[2]
-                time.sleep(2.4)
-                yield (scraper._listing_url_to_job(url), [source, url])
-        except sqlite3.Error as e:
-            print(f"Error occurred: {e}")
-        finally:
-            if conn:
-                conn.close()

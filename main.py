@@ -4,7 +4,7 @@ from sql.table_initialization import initialize_tables
 from datetime import datetime
 import os
 
-from website_scraper.site_scraper import extract_jobs
+from website_scraper import run_scrapers
 
 DB_PATH = os.getenv("DB_PATH")
 
@@ -23,7 +23,7 @@ from rich import print
 
 def _jobs_etl(date: datetime) -> None:
     print(f"Extracting listings from date {date.date()}")
-    jobs = extract_jobs(date)
+    jobs = run_scrapers(date)
     jobs_to_db(jobs)
 
 
