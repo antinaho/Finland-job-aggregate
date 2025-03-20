@@ -8,7 +8,6 @@ import os
 from bs4 import BeautifulSoup
 from curl_cffi import requests
 
-
 def get_soup(page_url) -> (BeautifulSoup, bool):
     try:
         r = requests.get(page_url, impersonate="chrome")

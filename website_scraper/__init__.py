@@ -15,3 +15,4 @@ def run_scrapers(date):
     jobs = []
     for scraper in scrapers:
         jobs.extend(scraper.get_jobs_from_date(date))
+    return jobs

@@ -15,6 +15,5 @@ class Job:
 
 @dataclass
 class Listing:
-    source: str
     date: datetime.date
     url: str

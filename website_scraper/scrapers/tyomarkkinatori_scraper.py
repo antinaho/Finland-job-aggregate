@@ -3,7 +3,6 @@ from curl_cffi import requests
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-from website_scraper.base_scraper import SiteScraper
 from website_scraper.models import Job
 
 import time
@@ -21,11 +20,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class TyomarkkinatoriScraper(SiteScraper):
+class TyomarkkinatoriScraper:
 
     source = "Työmarkkinatori"
 
-    def _get_jobs_from_date(self, date: datetime):
+    def get_jobs_from_date(self, date: datetime):
+        logger.info(f"--- Starting scraper for {self.source} ---")
         week_ago = datetime.now().date() - relativedelta(weeks=1)
         formatted_datetime = week_ago.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
@@ -107,7 +107,7 @@ class TyomarkkinatoriScraper(SiteScraper):
 
                 jobs.append(job)
 
-            time.sleep(random.random() * 1.5)
+            time.sleep(random.random() * 1.22)
         return jobs
 
 def _get_max_page(formatted_datetime) -> int:
@@ -150,19 +150,15 @@ def _title( json, language) -> str:
     return json["title"]["values"].get(language, "")
 
 def _company(json, language) -> str:
-    #print(json)
     return json["businessName"]["values"].get(language, "")
 
 def _description(json, language) -> str:
     return json["jobDescription"]["values"].get(language, "")
 
 def _location(json, location_json) -> str:
-
-    location = ""
     municipalities = json.get("municipalities", [])
-
     if len(municipalities) > 0:
-
+        location = ""
         for index, code in enumerate(municipalities):
 
             for l in location_json:
@@ -181,7 +177,11 @@ def _location(json, location_json) -> str:
     if postal_address != "":
         return postal_address
 
-    return location
+    countries = json.get("countries", [])
+    if len(countries) > 0:
+        return countries[0]
+
+    return ""
 
 def _post_url(id, language) -> str:
     return f"https://tyomarkkinatori.fi/henkiloasiakkaat/avoimet-tyopaikat/{id}/{language}/"
