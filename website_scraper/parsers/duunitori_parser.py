@@ -74,16 +74,10 @@ class DuunitoriPostParser:
 
 class DuunitoriNavPageParser:
 
-    def get_next_nav_page_gen(self, soup: BeautifulSoup) -> Iterator[str]:
-        while True:
-            link = soup.select("a.pagination__page-round")[-1]
-            if not link:
-                break
-
-            next_url = link["href"]
-            if not next_url:
-                break
-            yield next_url
+    def get_next_nav_page_gen(self, soup: BeautifulSoup) -> str:
+        link = soup.select("a.pagination__page-round")[-1]
+        next_url = link["href"]
+        return next_url
 
     def get_listing_from_nav_page_gen(self, nav_page: BeautifulSoup) -> Iterator[BeautifulSoup]:
         divs = nav_page.select("div.grid-sandbox--tight-bottom div.grid.grid--middle.job-box.job-box--lg")

@@ -9,7 +9,6 @@ import time
 import random
 
 import logging
-from rich import print
 
 logging.basicConfig(
     level=logging.INFO,

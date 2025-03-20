@@ -2,11 +2,9 @@ from datetime import datetime
 from typing import List
 
 
-from website_scraper.models import Job, Listing
+from website_scraper.models import Job
 
 import logging
-from rich import print
-import random
 
 from website_scraper.parsers.duunitori_parser import DuunitoriPostParser, DuunitoriNavPageParser
 from website_scraper.site_scraper import get_soup_async
@@ -39,13 +37,9 @@ class DuunitoriScraper:
 
         listings = []
         continue_ = True
-        url_generator = self.nav_parser.get_next_nav_page_gen(soup)
-        i = 1
         tries = 0
         while continue_:
             try:
-                i += 1
-
                 earliest = datetime.now().date()
                 for listing in self.nav_parser.get_listing_from_nav_page_gen(soup):
                     if listing.date == date.date():
@@ -60,7 +54,7 @@ class DuunitoriScraper:
                     tries += 1
                     if tries >= 2:
                         continue_ = False
-                next_url = next(url_generator)
+                next_url = self.nav_parser.get_next_nav_page_gen(soup)
                 soup, ok = await get_soup_async(next_url)
                 if not ok:
                     break

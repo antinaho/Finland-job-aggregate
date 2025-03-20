@@ -6,9 +6,9 @@ from typing import List
 
 
 scrapers = [
-    DuunitoriScraper(),
+    #DuunitoriScraper(),
     JoblyScraper(),
-    TyomarkkinatoriScraper()
+    #TyomarkkinatoriScraper()
 ]
 import asyncio
 

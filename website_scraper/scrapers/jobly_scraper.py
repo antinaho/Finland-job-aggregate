@@ -1,14 +1,9 @@
 from datetime import datetime
 
-from bs4 import BeautifulSoup
-from curl_cffi import requests
-from rich import print
-
 from website_scraper.models import Job
 import logging
 import time
 
-from typing import Iterator
 
 from website_scraper.parsers.jobly_parser import JoblyPostParser
 from website_scraper.site_scraper import get_soup, get_soup_async
@@ -22,16 +17,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def _next_nav_url_gen(soup) -> Iterator[str]:
+def _next_nav_url(soup) -> str:
     base_url = "https://www.jobly.fi/"
-
-    while True:
-        link = soup.select_one("li.pager__item--next > a")
-        if not link:
-            break
-
-        next_url = base_url + link["href"]
-        yield next_url
+    link = soup.select_one("li.pager__item--next > a")
+    next_url = base_url + link["href"]
+    return next_url
 
 class JoblyScraper:
     source = "Jobly"
@@ -48,14 +38,9 @@ class JoblyScraper:
 
         post_urls = []
         continue_ = True
-        url_generator = _next_nav_url_gen(soup)
-        i = 1
         while continue_:
             try:
-                i += 1
-
                 posts = soup.select("div.views-row")
-
                 for post in posts:
                     promoted = post.select_one("div.mobile_job_badge > span.node--job__featured-badge")
                     if promoted:
@@ -75,17 +60,16 @@ class JoblyScraper:
                     else:
                         continue_ = False
                         break
-                next_url = next(url_generator)
+                next_url = _next_nav_url(soup)
                 soup, ok = await get_soup_async(next_url)
                 if not ok:
                     break
-                time.sleep(0.2)
+                time.sleep(0.3)
             except StopIteration:
                 break
 
         len_urls = len(post_urls)
         for i, listing in enumerate(post_urls):
-
             date = listing[0]
             url = listing[1]
 
