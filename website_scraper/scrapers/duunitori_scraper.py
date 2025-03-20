@@ -9,7 +9,7 @@ from rich import print
 import random
 
 from website_scraper.parsers.duunitori_parser import DuunitoriPostParser, DuunitoriNavPageParser
-from website_scraper.site_scraper import get_soup
+from website_scraper.site_scraper import get_soup_async
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,10 +28,10 @@ class DuunitoriScraper:
     post_parser = DuunitoriPostParser()
     nav_parser = DuunitoriNavPageParser()
 
-    def get_jobs_from_date(self, date: datetime) -> List[Job]:
+    async def get_jobs_from_date(self, date: datetime) -> List[Job]:
         logger.info(f"--- Starting scraper for {self.source} ---")
         init_page = "https://duunitori.fi/tyopaikat?order_by=date_posted&sivu=0"
-        soup, ok = get_soup(init_page)
+        soup, ok = await get_soup_async(init_page)
         jobs = []
 
         if not ok:
@@ -44,8 +44,8 @@ class DuunitoriScraper:
         tries = 0
         while continue_:
             try:
-                logger.info(f"Finding listings from page {i}")
                 i += 1
+
                 earliest = datetime.now().date()
                 for listing in self.nav_parser.get_listing_from_nav_page_gen(soup):
                     if listing.date == date.date():
@@ -60,24 +60,26 @@ class DuunitoriScraper:
                     tries += 1
                     if tries >= 2:
                         continue_ = False
-                soup = next(url_generator)
+                next_url = next(url_generator)
+                soup, ok = await get_soup_async(next_url)
+                if not ok:
+                    break
             except StopIteration:
                 break
 
         jobs = []
         listing_len = len(listings)
         for i, l in enumerate(listings):
-            logger.info(f"Extracting job from listings: {i+1} / {listing_len}")
-            job = self._listing_url_to_job(l)
+            job = await self._listing_url_to_job(l)
             if job:
                 jobs.append(job)
 
         return jobs
 
-    def _listing_url_to_job(self, listing) -> Job:
+    async def _listing_url_to_job(self, listing) -> Job:
         url = listing.url
 
-        soup, ok = get_soup(url)
+        soup, ok = await get_soup_async(url)
 
         if not ok:
             return None

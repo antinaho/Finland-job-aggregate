@@ -11,7 +11,7 @@ import time
 from typing import Iterator
 
 from website_scraper.parsers.jobly_parser import JoblyPostParser
-from website_scraper.site_scraper import get_soup
+from website_scraper.site_scraper import get_soup, get_soup_async
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,27 +22,25 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def _next_nav_url_gen(soup) -> Iterator[BeautifulSoup]:
+def _next_nav_url_gen(soup) -> Iterator[str]:
     base_url = "https://www.jobly.fi/"
 
     while True:
         link = soup.select_one("li.pager__item--next > a")
         if not link:
             break
+
         next_url = base_url + link["href"]
-        soup, ok = get_soup(next_url)
-        if not ok:
-            break
-        yield soup
+        yield next_url
 
 class JoblyScraper:
     source = "Jobly"
 
-    def get_jobs_from_date(self, date: datetime):
+    async def get_jobs_from_date(self, date: datetime):
         logger.info(f"--- Starting scraper for {self.source} ---")
 
         init_page = "https://www.jobly.fi/tyopaikat?search=&job_geo_location=&Etsi_ty%C3%B6paikkoja=Etsi%20ty%C3%B6paikkoja&lat=&lon=&country=&administrative_area_level_1=&page=0"
-        soup, ok = get_soup(init_page)
+        soup, ok = await get_soup_async(init_page)
         jobs = []
 
         if not ok:
@@ -54,7 +52,6 @@ class JoblyScraper:
         i = 1
         while continue_:
             try:
-                logger.info(f"Finding listings from page: {i}")
                 i += 1
 
                 posts = soup.select("div.views-row")
@@ -78,19 +75,21 @@ class JoblyScraper:
                     else:
                         continue_ = False
                         break
-                soup = next(url_generator)
+                next_url = next(url_generator)
+                soup, ok = await get_soup_async(next_url)
+                if not ok:
+                    break
                 time.sleep(0.2)
             except StopIteration:
                 break
 
         len_urls = len(post_urls)
         for i, listing in enumerate(post_urls):
-            logger.info(f"Extracting job from listings: {i+1} / {len_urls}")
 
             date = listing[0]
             url = listing[1]
 
-            soup, ok = get_soup(url)
+            soup, ok = await get_soup_async(url)
 
             if not ok:
                 continue
@@ -102,7 +101,7 @@ class JoblyScraper:
             title = post_parser.get_title()
             company = post_parser.get_company()
             location = post_parser.get_location()
-            apply_url = post_parser.get_apply_url(soup)
+            apply_url = await post_parser.get_apply_url(soup)
             description = post_parser.get_description()
 
             job = Job(

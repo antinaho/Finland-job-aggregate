@@ -24,14 +24,14 @@ class TyomarkkinatoriScraper:
 
     source = "Työmarkkinatori"
 
-    def get_jobs_from_date(self, date: datetime):
+    async def get_jobs_from_date(self, date: datetime):
         logger.info(f"--- Starting scraper for {self.source} ---")
         week_ago = datetime.now().date() - relativedelta(weeks=1)
         formatted_datetime = week_ago.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
-        max_page = _get_max_page(formatted_datetime)
+        max_page = await _get_max_page(formatted_datetime)
 
-        location_json, status = _get_location_codes()
+        location_json, status = await _get_location_codes()
 
         if not status:
             return []
@@ -40,27 +40,35 @@ class TyomarkkinatoriScraper:
         continue_ = True
 
         for i in range(0, max_page):
-            logger.info(f"Finding jobs from page {i+1}")
             if not continue_: break
 
             json_data['paging']['pageNumber'] = i
             json_data['filters']['publishedAfter'] = json_data['filters']['publishedAfter'].format(
                 published_after=formatted_datetime)
 
-            response = requests.post(
-                'https://tyomarkkinatori.fi/api/jobpostingfulltext/search/v1/search',
-                json=json_data,
-                impersonate="chrome"
-            )
+            try:
+                async with AsyncSession() as session:
+                    response = await session.post(
+                        'https://tyomarkkinatori.fi/api/jobpostingfulltext/search/v1/search',
+                        json=json_data,
+                        impersonate="chrome"
+                    )
+            except Exception as e:
+                continue
 
             if response.status_code != 200:
                 continue
 
             for item in response.json()["content"]:
-                r = requests.get(
-                    f'https://tyomarkkinatori.fi/api/jobposting/v1/jobpostings/{item["id"]}',
-                    impersonate="chrome"
-                )
+
+                try:
+                    async with AsyncSession() as session:
+                        r = await session.get(
+                            f'https://tyomarkkinatori.fi/api/jobposting/v1/jobpostings/{item["id"]}',
+                            impersonate="chrome"
+                        )
+                except Exception as e:
+                    continue
 
                 if r.status_code != 200:
                     continue
@@ -110,35 +118,41 @@ class TyomarkkinatoriScraper:
             time.sleep(random.random() * 1.22)
         return jobs
 
-def _get_max_page(formatted_datetime) -> int:
+from curl_cffi.requests import AsyncSession
+async def _get_max_page(formatted_datetime) -> int:
 
     json_data['paging']['pageNumber'] = 0
     json_data['filters']['publishedAfter'] = json_data['filters']['publishedAfter'].format(
         published_after=formatted_datetime)
 
-    response = requests.post(
-        'https://tyomarkkinatori.fi/api/jobpostingfulltext/search/v1/search',
-        json=json_data,
-        impersonate="chrome"
-    )
-
-    if response.status_code != 200:
+    try:
+        async with AsyncSession() as session:
+            response = await session.post(
+                'https://tyomarkkinatori.fi/api/jobpostingfulltext/search/v1/search',
+                json=json_data,
+                impersonate="chrome"
+            )
+    except Exception as e:
         return 0
 
     max_page = min(response.json()["totalPages"], 100)
 
     return max_page
 
-def _get_location_codes() -> (str, bool):
-    location_codes = requests.get(
-        'https://tyomarkkinatori.fi/api/codes/v1/koodistot/KUNTA/koodit',
-        impersonate="chrome"
-    )
+async def _get_location_codes() -> (str, bool):
+    try:
+        async with AsyncSession() as session:
+            response = await session.get(
+            'https://tyomarkkinatori.fi/api/codes/v1/koodistot/KUNTA/koodit',
+            impersonate="chrome"
+            )
+    except Exception as e:
+        return 0
 
-    if location_codes.status_code != 200:
+    if response.status_code != 200:
         return "", False
 
-    return location_codes.json(), True
+    return response.json(), True
 
 def _raw_to_job_date(raw_date) -> datetime.date:
     return datetime.strptime(raw_date.split("T")[0], "%Y-%m-%d").date()

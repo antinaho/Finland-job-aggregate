@@ -45,11 +45,16 @@ class JoblyPostParser:
     def get_description(self, soup: BeautifulSoup = None) -> str:
         return self.dic.get("description")
 
-    def get_apply_url(self, soup: BeautifulSoup = None) -> str:
+    async def get_apply_url(self, soup: BeautifulSoup = None) -> str:
         apply_tag = soup.select_one("li.recruiter_job_application > a").get("href")
         url = "https://jobly.fi"
+
         try:
-            res = requests.get(url + apply_tag, impersonate="chrome")
-            return res.url
+            async with AsyncSession() as session:
+                response = await session.get(url + apply_tag, impersonate="chrome")
+                if response.status_code == 200:
+                    return response.url
         except Exception as e:
             return ""
+
+from curl_cffi.requests import AsyncSession

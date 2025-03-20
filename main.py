@@ -5,7 +5,7 @@ from sql.table_initialization import initialize_tables
 from datetime import datetime
 import os
 
-from website_scraper import run_scrapers
+from website_scraper import run_scrapers, run_scrapers_async
 
 DB_PATH = os.getenv("DB_PATH")
 
@@ -27,7 +27,9 @@ import asyncio
 
 def _jobs_etl(date: datetime) -> None:
     print(f"Extracting listings from date {date.date()}")
-    jobs = asyncio.run(run_scrapers(date))
+
+    jobs = asyncio.run(run_scrapers_async(date))
+
     jobs_to_db(jobs)
 
 
