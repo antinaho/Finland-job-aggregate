@@ -38,8 +38,12 @@ class JoblyScraper:
 
         post_urls = []
         continue_ = True
+        j = 0
         while continue_:
             try:
+                j += 1
+                if j % 10 == 0:
+                    print(f"Jobly page: {j}")
                 posts = soup.select("div.views-row")
                 for post in posts:
                     promoted = post.select_one("div.mobile_job_badge > span.node--job__featured-badge")
@@ -69,7 +73,11 @@ class JoblyScraper:
                 break
 
         len_urls = len(post_urls)
+        print(f"Starting to extract Jobly jobs {len_urls}")
         for i, listing in enumerate(post_urls):
+            if i % 10 == 0:
+                print(f"Jobly {i}/{len_urls}")
+
             date = listing[0]
             url = listing[1]
 

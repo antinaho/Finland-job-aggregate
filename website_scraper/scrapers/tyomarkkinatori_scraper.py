@@ -39,6 +39,9 @@ class TyomarkkinatoriScraper:
         continue_ = True
 
         for i in range(0, max_page):
+            if i % 10 == 0:
+                print(f"Työmarkkinatori page: {i}")
+
             if not continue_: break
 
             json_data['paging']['pageNumber'] = i

@@ -38,8 +38,12 @@ class DuunitoriScraper:
         listings = []
         continue_ = True
         tries = 0
+        j = 0
         while continue_:
             try:
+                j += 1
+                if j % 10 == 0:
+                    print(f"Duunitori page: {j}")
                 earliest = datetime.now().date()
                 for listing in self.nav_parser.get_listing_from_nav_page_gen(soup):
                     if listing.date == date.date():
@@ -63,7 +67,10 @@ class DuunitoriScraper:
 
         jobs = []
         listing_len = len(listings)
+        print(f"Starting to extract Duunitori jobs {listing_len}")
         for i, l in enumerate(listings):
+            if i % 10 == 0:
+                print(f"Duunitori {i}/{listing_len}")
             job = await self._listing_url_to_job(l)
             if job:
                 jobs.append(job)
